@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coco by Clôdette · Pide tu presupuesto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f1ea; --card:#fffdf9; --ink:#3b2a20; --muted:#8a7565;
+    --line:#e4d8c9; --accent:#5a3826; --accent-soft:#efe4d6; --err:#a3342b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Jost',sans-serif;font-weight:300;background:var(--bg);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:560px;margin:0 auto;padding:32px 18px 60px}
+  header{text-align:center;margin-bottom:26px}
+  .logo{width:104px;height:104px;border-radius:50%;border:2px solid var(--ink);margin:0 auto 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;background:#fff;box-shadow:0 0 0 6px var(--bg),0 0 0 7px var(--line)}
+  .logo span{font-size:24px;line-height:1}
+  .logo small{font-size:13px;line-height:1.1;margin:2px 0}
+  h1{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:34px;line-height:1.1}
+  .sub{color:var(--muted);margin-top:8px;font-size:15px}
+  form{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px 20px}
+  .step{padding:4px 0 24px;border-bottom:1px solid var(--line);margin-bottom:22px}
+  .step:last-of-type{border-bottom:none;margin-bottom:6px;padding-bottom:6px}
+  .step h2{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:22px;display:flex;align-items:baseline;gap:10px;margin-bottom:4px}
+  .num{font-family:'Jost';font-size:12px;font-weight:500;color:var(--muted);letter-spacing:.08em}
+  .hint{font-size:13.5px;color:var(--muted);margin-bottom:14px}
+  label.f{display:block;font-size:13px;font-weight:500;letter-spacing:.03em;margin-bottom:6px}
+  input[type=text],input[type=tel],input[type=number],select,textarea{width:100%;font:inherit;font-weight:400;font-size:16px;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;outline:none;transition:border .15s}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+  textarea{resize:vertical;min-height:70px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .row + .row,.mt{margin-top:12px}
+  .unit{position:relative}
+  .unit input{padding-right:42px}
+  .unit::after{content:'cm';position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px}
+  .chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px}
+  .chip{position:relative}
+  .chip input{position:absolute;opacity:0;pointer-events:none}
+  .chip label{display:flex;align-items:center;gap:9px;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:#fff;cursor:pointer;font-size:14.5px;font-weight:400;transition:all .15s;min-height:46px}
+  .chip input:checked + label{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent)}
+  .chip input:focus-visible + label{outline:2px solid var(--accent);outline-offset:2px}
+  .sw{width:20px;height:20px;border-radius:50%;flex:none;border:1px solid rgba(0,0,0,.15)}
+  .sw.multi{background:conic-gradient(#c0392b,#e8a33d,#7fa36b,#4f7cac,#a05a9c,#c0392b)}
+  .sw.same{background:linear-gradient(135deg,#6b4a35 50%,#6b4a35 50%);position:relative}
+  .sw.same::after{content:'=';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:500}
+  .chips.size{grid-template-columns:1fr 1fr}
+  .chips.size label{flex-direction:column;align-items:flex-start;gap:2px;padding:14px}
+  .chips.size b{font-weight:500;font-size:16px}
+  .chips.size small{color:var(--muted);font-size:13px}
+  .pick{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:13px;color:var(--muted)}
+  .pick input{width:44px;height:36px;border:1px solid var(--line);border-radius:8px;padding:2px;background:#fff;flex:none}
+  .preview{margin-top:20px;background:linear-gradient(180deg,#efe6da,#e7dccd);border-radius:16px;padding:16px 12px 12px;text-align:center}
+  .pv-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500}
+  #pv{width:100%;max-width:380px;display:block;margin:4px auto 0}
+  .pv-cap{font-size:14px;font-weight:400;margin-top:4px}
+  .pv-note{font-size:12px;color:var(--muted);margin-top:2px}
+  .other{display:none;margin-top:10px}
+  .other.show{display:block}
+  .qty{display:flex;align-items:center;gap:0;width:150px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+  .qty button{width:46px;height:46px;border:none;background:var(--accent-soft);color:var(--accent);font-size:20px;cursor:pointer;font-family:inherit}
+  .qty input{border:none;border-radius:0;text-align:center;padding:10px 0;-moz-appearance:textfield}
+  .qty input::-webkit-outer-spin-button,.qty input::-webkit-inner-spin-button{-webkit-appearance:none}
+  .err{color:var(--err);font-size:13px;margin-top:6px;display:none}
+  .invalid .err{display:block}
+  .invalid input,.invalid select{border-color:var(--err)}
+  .btn{display:block;width:100%;border:none;border-radius:12px;padding:16px;font:inherit;font-size:16px;font-weight:500;letter-spacing:.03em;cursor:pointer;text-align:center;text-decoration:none;transition:opacity .15s}
+  .btn:active{opacity:.85}
+  .primary{background:var(--accent);color:#fff;margin-top:20px}
+  .ghost{background:transparent;color:var(--accent);border:1px solid var(--accent);margin-top:10px}
+  .wa{background:#25d366;color:#fff}
+  .legal{font-size:12px;color:var(--muted);text-align:center;margin-top:14px}
+  /* resumen */
+  #done{display:none;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px 20px}
+  #done h2{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:28px;text-align:center}
+  #done p.sub{text-align:center;margin-bottom:18px}
+  pre{white-space:pre-wrap;font-family:'Jost',sans-serif;font-size:14.5px;font-weight:400;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+  .steps-send{font-size:14px;color:var(--muted);margin:12px 0 4px;text-align:center}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:30px;font-size:14px;opacity:0;transition:all .25s;pointer-events:none}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  footer{text-align:center;margin-top:26px;font-size:13px;color:var(--muted)}
+  footer a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo"><span>Coco</span><small>By</small><span>Clôdette</span></div>
+    <h1>Pide tu presupuesto</h1>
+    <p class="sub">Mantones tejidos a mano, del color que más te guste.<br>Rellena el formulario y te respondo con el precio.</p>
+  </header>
+
+  <form id="f" novalidate>
+    <!-- 1 Medidas -->
+    <section class="step" id="s-medidas">
+      <h2><span class="num">01</span>Medidas</h2>
+      <p class="hint">Elige el tamaño del mantón.</p>
+      <div class="chips size" id="tallas"></div>
+      <p class="err">Elige un tamaño.</p>
+    </section>
+
+    <!-- 2 Color principal -->
+    <section class="step" id="s-color">
+      <h2><span class="num">02</span>Color principal</h2>
+      <p class="hint">El color del tejido del mantón.</p>
+      <div class="chips" id="colores"></div>
+      <div class="other" id="color-otro-wrap">
+        <input type="text" id="color-otro" placeholder="¿Qué color quieres? Ej. verde botella">
+        <div class="pick"><input type="color" id="color-otro-hex" value="#3f6b4f"><span>Elige el tono aproximado para la simulación</span></div>
+      </div>
+      <p class="err">Elige un color (o escribe cuál quieres).</p>
+    </section>
+
+    <!-- 3 Flecos -->
+    <section class="step" id="s-flecos">
+      <h2><span class="num">03</span>Color de los flecos</h2>
+      <p class="hint">Puedes combinarlos con el mantón o elegir un contraste.</p>
+      <div class="chips" id="flecos"></div>
+      <div class="other" id="flecos-otro-wrap">
+        <input type="text" id="flecos-otro" placeholder="¿Qué color de flecos? Ej. teja">
+        <div class="pick"><input type="color" id="flecos-otro-hex" value="#b5523b"><span>Elige el tono aproximado para la simulación</span></div>
+      </div>
+      <p class="err">Elige un color de flecos (o escribe cuál quieres).</p>
+
+      <div class="preview" id="preview">
+        <p class="pv-title">Así quedaría tu mantón</p>
+        <svg id="pv" viewBox="0 0 320 250" role="img" aria-label="Simulación del mantón"></svg>
+        <p class="pv-cap" id="pv-cap">Elige los colores para ver la simulación</p>
+        <p class="pv-note">Simulación orientativa: los tonos reales de la lana pueden variar.</p>
+      </div>
+    </section>
+
+    <!-- 4 Cantidad -->
+    <section class="step" id="s-cant">
+      <h2><span class="num">04</span>Cantidad</h2>
+      <p class="hint">¿Cuántos mantones quieres?</p>
+      <div class="qty">
+        <button type="button" data-d="-1" aria-label="Menos">−</button>
+        <input type="number" id="cantidad" value="1" min="1" inputmode="numeric" aria-label="Cantidad">
+        <button type="button" data-d="1" aria-label="Más">+</button>
+      </div>
+      <p class="err">La cantidad mínima es 1.</p>
+    </section>
+
+    <!-- 5 Entrega -->
+    <section class="step" id="s-cp">
+      <h2><span class="num">05</span>Entrega</h2>
+      <p class="hint">Para calcular el envío.</p>
+      <div class="row">
+        <div><label class="f" for="pais">País</label>
+          <select id="pais"><option>España</option><option>Francia</option><option>Portugal</option><option>Otro</option></select></div>
+        <div><label class="f" for="cp">Código postal</label><input type="text" id="cp" inputmode="numeric" autocomplete="postal-code" placeholder="Ej. 31591"></div>
+      </div>
+      <p class="err">Escribe un código postal válido.</p>
+    </section>
+
+    <!-- 6 Contacto -->
+    <section class="step" id="s-contacto">
+      <h2><span class="num">06</span>Tus datos</h2>
+      <p class="hint">Para enviarte el presupuesto.</p>
+      <label class="f" for="nombre">Nombre</label>
+      <input type="text" id="nombre" autocomplete="name" placeholder="Tu nombre">
+      <label class="f mt" for="tel">Teléfono</label>
+      <input type="tel" id="tel" autocomplete="tel" placeholder="Ej. 600 123 456">
+      <label class="f mt" for="nota">Comentarios <span style="color:var(--muted);font-weight:300">(opcional)</span></label>
+      <textarea id="nota" placeholder="Fecha en la que lo necesitas, modelo que te gustó..."></textarea>
+      <p class="err">Escribe tu nombre y un teléfono válido.</p>
+    </section>
+
+    <button class="btn primary" type="submit">Pedir presupuesto</button>
+    <p class="legal">Tus datos solo se usan para preparar y enviarte el presupuesto.</p>
+  </form>
+
+  <div id="done">
+    <h2>¡Ya casi está!</h2>
+    <p class="sub">Envíame tu solicitud para que pueda prepararte el presupuesto.</p>
+    <pre id="resumen"></pre>
+    <a class="btn wa" id="btn-wa" href="#" target="_blank" rel="noopener" style="display:none">Enviar por WhatsApp</a>
+    <button class="btn primary" id="btn-copy" type="button">Copiar solicitud</button>
+    <p class="steps-send" id="ig-help">Cópiala y pégala en un mensaje de Instagram:</p>
+    <a class="btn ghost" id="btn-ig" href="https://ig.me/m/coco_by_clodette" target="_blank" rel="noopener">Abrir mensaje en Instagram</a>
+    <button class="btn ghost" id="btn-back" type="button">Modificar datos</button>
+  </div>
+
+  <footer>Coco by Clôdette · Hecho a mano 100% · <a href="https://www.instagram.com/coco_by_clodette/" target="_blank" rel="noopener">@coco_by_clodette</a></footer>
+</div>
+<div class="toast" id="toast">Copiado</div>
+
+<script>
+/* ===== CONFIGURACIÓN =====
+   Número de WhatsApp de la tienda con prefijo de país, sin + ni espacios (ej. "34600123456").
+   Si se deja vacío, el botón de WhatsApp no aparece y se usa Instagram. */
+const WHATSAPP = "34606690119";
+
+const COLORES = [
+  ["Negro","#1d1a18"],["Blanco","#ffffff"],["Beige","#d9c3a3"],
+  ["Marrón","#5a3826"],["Granate","#7a1f2b"],["Otro","multi"]
+];
+const FLECOS = [
+  ["Mismo tono que el mantón","same"],["Beige","#d9c3a3"],["Rosa","#c76b93"],
+  ["Naranja","#d9622b"],["Blanco","#ffffff"],["Negro","#1d1a18"],["Otro","multi"]
+];
+/* Tallas: cuando las sepa, escribir las medidas entre las comillas (ej. "180 x 90 cm") */
+const TALLAS = [
+  ["Pequeño",""],
+  ["Grande",""]
+];
+
+function chips(id, name, list, otherWrap){
+  const box = document.getElementById(id);
+  list.forEach(([t,c],i)=>{
+    const d=document.createElement('div'); d.className='chip';
+    const sw = c==='multi'?'<span class="sw multi"></span>':c==='same'?'<span class="sw same"></span>':`<span class="sw" style="background:${c}"></span>`;
+    d.innerHTML=`<input type="radio" name="${name}" id="${name}${i}" value="${t}" data-hex="${c}"><label for="${name}${i}">${sw}${t}</label>`;
+    box.appendChild(d);
+  });
+  box.addEventListener('change',e=>{
+    document.getElementById(otherWrap).classList.toggle('show', e.target.value==='Otro');
+    if(e.target.value==='Otro') document.querySelector('#'+otherWrap+' input').focus();
+  });
+}
+chips('colores','color',COLORES,'color-otro-wrap');
+chips('flecos','flecos',FLECOS,'flecos-otro-wrap');
+(()=>{const box=document.getElementById('tallas');
+  TALLAS.forEach(([t,m],i)=>{const d=document.createElement('div');d.className='chip';
+    d.innerHTML=`<input type="radio" name="talla" id="talla${i}" value="${t}"><label for="talla${i}"><b>${t}</b>${m?`<small>${m}</small>`:''}</label>`;
+    box.appendChild(d);});})();
+
+const $=id=>document.getElementById(id);
+const cant=$('cantidad');
+document.querySelectorAll('.qty button').forEach(b=>b.onclick=()=>{
+  cant.value=Math.max(1,(parseInt(cant.value)||1)+parseInt(b.dataset.d));
+});
+
+/* ===== Simulación ===== */
+function shade(hex,amt){const n=parseInt(hex.slice(1),16);let r=n>>16,g=(n>>8)&255,b=n&255;
+  const f=v=>Math.max(0,Math.min(255,Math.round(amt<0?v*(1+amt):v+(255-v)*amt)));
+  return '#'+[f(r),f(g),f(b)].map(x=>x.toString(16).padStart(2,'0')).join('');}
+function lum(hex){const n=parseInt(hex.slice(1),16);return(0.299*(n>>16)+0.587*((n>>8)&255)+0.114*(n&255))/255;}
+function selHex(name,otherHexId){const r=document.querySelector(`input[name=${name}]:checked`);if(!r)return null;
+  if(r.value==='Otro')return $(otherHexId).value;return r.dataset.hex;}
+// pseudo-aleatorio estable para que los flecos no "bailen" al cambiar de color
+let seed=7;const rnd=()=>{seed=(seed*9301+49297)%233280;return seed/233280;};
+const FR=[];(()=>{seed=7;
+  const A=[22,30],B=[298,30],C=[160,168];
+  [[A,C],[C,B]].forEach(([p,q])=>{for(let i=0;i<=46;i++){const t=i/46;
+    const x=p[0]+(q[0]-p[0])*t,y=p[1]+(q[1]-p[1])*t;
+    const len=(46+rnd()*22)*(0.75+0.25*(1-Math.abs(x-160)/140))+ (Math.abs(x-160)<20?14:0);
+    FR.push({x,y,dx:(x-160)*0.05+(rnd()-.5)*6,len,w:3.2+rnd()*1.8,o:rnd()});}});})();
+
+function drawPreview(){
+  const c=selHex('color','color-otro-hex');
+  let f=selHex('flecos','flecos-otro-hex');
+  if(f==='same')f=c;
+  const base=c||'#cbbba8', fl=f||'#b8a894';
+  const t=document.querySelector('input[name=talla]:checked');
+  const sc=t&&t.value==='Pequeño'?0.84:1;
+  const light=lum(base)>0.75, mesh=light?shade(base,-0.22):shade(base,-0.35), hi=shade(base,0.12);
+  const flD=lum(fl)>0.75?shade(fl,-0.18):shade(fl,-0.28), flL=shade(fl,0.15);
+  let fr='';
+  FR.forEach(p=>{const col=p.o<.33?flD:p.o<.66?fl:flL;
+    fr+=`<path d="M${p.x.toFixed(1)} ${p.y.toFixed(1)} q${(p.dx*0.4).toFixed(1)} ${(p.len*0.5).toFixed(1)} ${p.dx.toFixed(1)} ${p.len.toFixed(1)}" stroke="${col}" stroke-width="${p.w.toFixed(1)}" stroke-linecap="round" fill="none"/>`;});
+  $('pv').innerHTML=`
+  <defs>
+    <pattern id="net" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="9" height="9" fill="${base}"/><rect x="2.2" y="2.2" width="4.6" height="4.6" rx="1.4" fill="${mesh}" opacity=".55"/>
+    </pattern>
+    <linearGradient id="fold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset=".5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".18"/></linearGradient>
+    <filter id="sh" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-opacity=".18"/></filter>
+  </defs>
+  <g transform="translate(160 0) scale(${sc}) translate(-160 ${sc<1?18:0})" filter="url(#sh)">
+    ${fr}
+    <path d="M22 30 Q160 22 298 30 L160 168 Z" fill="url(#net)"/>
+    <path d="M22 30 Q160 22 298 30 L160 168 Z" fill="url(#fold)"/>
+    <path d="M22 30 Q160 22 298 30" stroke="${hi}" stroke-width="3" fill="none" stroke-linecap="round"/>
+  </g>`;
+  const nm=n=>{const r=document.querySelector(`input[name=${n}]:checked`);if(!r)return null;
+    if(r.value==='Otro')return $(n==='color'?'color-otro':'flecos-otro').value.trim()||'otro color';return r.value;};
+  const cn=nm('color'),fn=nm('flecos');
+  $('pv-cap').textContent = cn&&fn ? `Mantón ${cn.toLowerCase()} con flecos ${fn==='Mismo tono que el mantón'?'del mismo tono':fn.toLowerCase()}${t?' · '+t.value.toLowerCase():''}`
+    : 'Elige los colores para ver la simulación';
+}
+document.querySelectorAll('#f input').forEach(i=>i.addEventListener('input',drawPreview));
+document.querySelectorAll('#f input').forEach(i=>i.addEventListener('change',drawPreview));
+drawPreview();
+
+function radio(n){const r=document.querySelector(`input[name=${n}]:checked`);return r?r.value:'';}
+function mark(id,bad){$(id).classList.toggle('invalid',bad);return bad;}
+
+$('f').addEventListener('submit',e=>{
+  e.preventDefault();
+  const talla=radio('talla');
+  const color=radio('color'), colorO=$('color-otro').value.trim();
+  const fl=radio('flecos'), flO=$('flecos-otro').value.trim();
+  const q=parseInt(cant.value);
+  const cp=$('cp').value.trim(), pais=$('pais').value;
+  const nombre=$('nombre').value.trim(), tel=$('tel').value.trim();
+  const telOk=tel.replace(/[^\d]/g,'').length>=9;
+  const cpOk = pais==='España' ? /^\d{5}$/.test(cp) : cp.length>=3;
+
+  const errs=[
+    mark('s-medidas', !talla),
+    mark('s-color', !color || (color==='Otro' && !colorO)),
+    mark('s-flecos', !fl || (fl==='Otro' && !flO)),
+    mark('s-cant', !(q>=1)),
+    mark('s-cp', !cpOk),
+    mark('s-contacto', !nombre || !telOk)
+  ];
+  const first=document.querySelector('.invalid');
+  if(first){first.scrollIntoView({behavior:'smooth',block:'center'});return;}
+
+  const txt=
+`Hola, quiero pedir presupuesto para un mantón:
+
+- Tamaño: ${talla}${(TALLAS.find(x=>x[0]===talla)||[])[1]?' ('+TALLAS.find(x=>x[0]===talla)[1]+')':''}
+- Color principal: ${color==='Otro'?colorO:color}
+- Color de flecos: ${fl==='Otro'?flO:fl}
+- Cantidad: ${q}
+- Entrega: CP ${cp} (${pais})
+- Nombre: ${nombre}
+- Teléfono: ${tel}${$('nota').value.trim()?'\n- Comentarios: '+$('nota').value.trim():''}`;
+
+  $('resumen').textContent=txt;
+  if(WHATSAPP){
+    $('btn-wa').href='https://wa.me/'+WHATSAPP+'?text='+encodeURIComponent(txt);
+    $('btn-wa').style.display='block';
+    $('btn-copy').className='btn ghost';
+    $('ig-help').textContent='¿Prefieres Instagram? Copia la solicitud y pégala en un mensaje:';
+  }
+  $('f').style.display='none'; $('done').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+
+$('btn-copy').onclick=async()=>{
+  const t=$('resumen').textContent;
+  try{ await navigator.clipboard.writeText(t); }
+  catch(_){ const r=document.createRange(); r.selectNodeContents($('resumen')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); try{document.execCommand('copy');}catch(__){} }
+  const to=$('toast'); to.textContent='Solicitud copiada'; to.classList.add('show'); setTimeout(()=>to.classList.remove('show'),1800);
+};
+$('btn-back').onclick=()=>{ $('done').style.display='none'; $('f').style.display='block'; };
+</script>
+</body>
+</html>
