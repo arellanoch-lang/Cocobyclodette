@@ -1,0 +1,13 @@
+{
+  "hosting": {
+    "site": "cocobyclodette",
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      ".firebaserc",
+      "README.md",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}
