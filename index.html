@@ -57,6 +57,7 @@
   .pv-cap{font-size:14px;font-weight:400;margin-top:4px}
   .pv-note{font-size:12px;color:var(--muted);margin-top:2px}
   .other{display:none;margin-top:10px}
+  .step.off{display:none}
   .other.show{display:block}
   .qty{display:flex;align-items:center;gap:0;width:150px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
   .qty button{width:46px;height:46px;border:none;background:var(--accent-soft);color:var(--accent);font-size:20px;cursor:pointer;font-family:inherit}
@@ -88,13 +89,24 @@
   <header>
     <div class="logo"><span>Coco</span><small>By</small><span>Clôdette</span></div>
     <h1>Pide tu presupuesto</h1>
-    <p class="sub">Mantones tejidos a mano, del color que más te guste.<br>Rellena el formulario y te respondo con el precio.</p>
+    <p class="sub">Mantones y bufandas tejidos a mano, del color que más te guste.<br>Rellena el formulario y te respondo con el precio.</p>
   </header>
 
   <form id="f" novalidate>
-    <!-- 1 Medidas -->
+    <!-- 0 Producto -->
+    <section class="step" id="s-producto">
+      <h2><span class="num">01</span>¿Qué quieres?</h2>
+      <p class="hint">Elige el producto.</p>
+      <div class="chips size">
+        <div class="chip"><input type="radio" name="producto" id="prod0" value="Mantón"><label for="prod0"><b>Mantón</b></label></div>
+        <div class="chip"><input type="radio" name="producto" id="prod1" value="Bufanda"><label for="prod1"><b>Bufanda</b></label></div>
+      </div>
+      <p class="err">Elige mantón o bufanda.</p>
+    </section>
+
+    <!-- 1 Medidas (solo mantón) -->
     <section class="step" id="s-medidas">
-      <h2><span class="num">01</span>Medidas</h2>
+      <h2><span class="num">02</span>Medidas</h2>
       <p class="hint">Elige el tamaño del mantón.</p>
       <div class="chips size" id="tallas"></div>
       <p class="err">Elige un tamaño.</p>
@@ -103,7 +115,7 @@
     <!-- 2 Color principal -->
     <section class="step" id="s-color">
       <h2><span class="num">02</span>Color principal</h2>
-      <p class="hint">El color del tejido del mantón.</p>
+      <p class="hint">El color del tejido.</p>
       <div class="chips" id="colores"></div>
       <div class="other" id="color-otro-wrap">
         <input type="text" id="color-otro" placeholder="¿Qué color quieres? Ej. verde botella">
@@ -115,7 +127,7 @@
     <!-- 3 Flecos -->
     <section class="step" id="s-flecos">
       <h2><span class="num">03</span>Color de los flecos</h2>
-      <p class="hint">Puedes combinarlos con el mantón o elegir un contraste.</p>
+      <p class="hint">Puedes combinarlos con el color principal o elegir un contraste.</p>
       <div class="chips" id="flecos"></div>
       <div class="other" id="flecos-otro-wrap">
         <input type="text" id="flecos-otro" placeholder="¿Qué color de flecos? Ej. teja">
@@ -124,8 +136,8 @@
       <p class="err">Elige un color de flecos (o escribe cuál quieres).</p>
 
       <div class="preview" id="preview">
-        <p class="pv-title">Así quedaría tu mantón</p>
-        <svg id="pv" viewBox="0 0 320 250" role="img" aria-label="Simulación del mantón"></svg>
+        <p class="pv-title" id="pv-title">Así quedaría tu mantón</p>
+        <svg id="pv" viewBox="0 0 320 250" role="img" aria-label="Simulación del producto"></svg>
         <p class="pv-cap" id="pv-cap">Elige los colores para ver la simulación</p>
         <p class="pv-note">Simulación orientativa: los tonos reales de la lana pueden variar.</p>
       </div>
@@ -134,7 +146,7 @@
     <!-- 4 Cantidad -->
     <section class="step" id="s-cant">
       <h2><span class="num">04</span>Cantidad</h2>
-      <p class="hint">¿Cuántos mantones quieres?</p>
+      <p class="hint">¿Cuántas unidades quieres?</p>
       <div class="qty">
         <button type="button" data-d="-1" aria-label="Menos">−</button>
         <input type="number" id="cantidad" value="1" min="1" inputmode="numeric" aria-label="Cantidad">
@@ -198,7 +210,7 @@ const COLORES = [
   ["Marrón","#5a3826"],["Granate","#7a1f2b"],["Otro","multi"]
 ];
 const FLECOS = [
-  ["Mismo tono que el mantón","same"],["Beige","#d9c3a3"],["Rosa","#c76b93"],
+  ["Mismo tono","same"],["Beige","#d9c3a3"],["Rosa","#c76b93"],
   ["Naranja","#d9622b"],["Blanco","#ffffff"],["Negro","#1d1a18"],["Otro","multi"]
 ];
 /* Tallas: cuando las sepa, escribir las medidas entre las comillas (ej. "180 x 90 cm") */
@@ -233,6 +245,15 @@ document.querySelectorAll('.qty button').forEach(b=>b.onclick=()=>{
   cant.value=Math.max(1,(parseInt(cant.value)||1)+parseInt(b.dataset.d));
 });
 
+function radio(n){const r=document.querySelector(`input[name=${n}]:checked`);return r?r.value:'';}
+/* Mostrar/ocultar medidas según producto y renumerar pasos */
+function syncProducto(){
+  $('s-medidas').classList.toggle('off', radio('producto')==='Bufanda');
+  let n=0;document.querySelectorAll('#f .step').forEach(s=>{if(!s.classList.contains('off'))s.querySelector('.num').textContent=String(++n).padStart(2,'0');});
+}
+document.querySelectorAll('input[name=producto]').forEach(r=>r.addEventListener('change',syncProducto));
+syncProducto();
+
 /* ===== Simulación ===== */
 function shade(hex,amt){const n=parseInt(hex.slice(1),16);let r=n>>16,g=(n>>8)&255,b=n&255;
   const f=v=>Math.max(0,Math.min(255,Math.round(amt<0?v*(1+amt):v+(255-v)*amt)));
@@ -254,13 +275,28 @@ function drawPreview(){
   let f=selHex('flecos','flecos-otro-hex');
   if(f==='same')f=c;
   const base=c||'#cbbba8', fl=f||'#b8a894';
-  const t=document.querySelector('input[name=talla]:checked');
+  const prod=radio('producto')||'Mantón', buf=prod==='Bufanda';
+  const t=buf?null:document.querySelector('input[name=talla]:checked');
   const sc=t&&t.value==='Pequeño'?0.84:1;
   const light=lum(base)>0.75, mesh=light?shade(base,-0.22):shade(base,-0.35), hi=shade(base,0.12);
   const flD=lum(fl)>0.75?shade(fl,-0.18):shade(fl,-0.28), flL=shade(fl,0.15);
   let fr='';
   FR.forEach(p=>{const col=p.o<.33?flD:p.o<.66?fl:flL;
     fr+=`<path d="M${p.x.toFixed(1)} ${p.y.toFixed(1)} q${(p.dx*0.4).toFixed(1)} ${(p.len*0.5).toFixed(1)} ${p.dx.toFixed(1)} ${p.len.toFixed(1)}" stroke="${col}" stroke-width="${p.w.toFixed(1)}" stroke-linecap="round" fill="none"/>`;});
+  let shape;
+  if(buf){
+    let bf='';seed=11;
+    [[58,-1],[262,1]].forEach(([x0,dir])=>{for(let i=0;i<=24;i++){const y=86+i*3.4;
+      const len=34+rnd()*14, col=rnd()<.33?flD:rnd()<.5?fl:flL;
+      bf+=`<path d="M${x0} ${y.toFixed(1)} q${(dir*len*0.5).toFixed(1)} ${(4+rnd()*4).toFixed(1)} ${(dir*len).toFixed(1)} ${(10+rnd()*10).toFixed(1)}" stroke="${col}" stroke-width="${(3+rnd()*1.6).toFixed(1)}" stroke-linecap="round" fill="none"/>`;}});
+    const body='M58 84 C120 72 200 96 262 84 L262 168 C200 180 120 156 58 168 Z';
+    shape=`${bf}<path d="${body}" fill="url(#net)"/><path d="${body}" fill="url(#fold)"/>`;
+  } else {
+    shape=`${fr}
+    <path d="M22 30 Q160 22 298 30 L160 168 Z" fill="url(#net)"/>
+    <path d="M22 30 Q160 22 298 30 L160 168 Z" fill="url(#fold)"/>
+    <path d="M22 30 Q160 22 298 30" stroke="${hi}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  }
   $('pv').innerHTML=`
   <defs>
     <pattern id="net" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
@@ -269,27 +305,23 @@ function drawPreview(){
     <linearGradient id="fold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset=".5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".18"/></linearGradient>
     <filter id="sh" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-opacity=".18"/></filter>
   </defs>
-  <g transform="translate(160 0) scale(${sc}) translate(-160 ${sc<1?18:0})" filter="url(#sh)">
-    ${fr}
-    <path d="M22 30 Q160 22 298 30 L160 168 Z" fill="url(#net)"/>
-    <path d="M22 30 Q160 22 298 30 L160 168 Z" fill="url(#fold)"/>
-    <path d="M22 30 Q160 22 298 30" stroke="${hi}" stroke-width="3" fill="none" stroke-linecap="round"/>
-  </g>`;
+  <g transform="translate(160 0) scale(${sc}) translate(-160 ${sc<1?18:0})" filter="url(#sh)">${shape}</g>`;
+  $('pv-title').textContent='Así quedaría tu '+prod.toLowerCase();
   const nm=n=>{const r=document.querySelector(`input[name=${n}]:checked`);if(!r)return null;
     if(r.value==='Otro')return $(n==='color'?'color-otro':'flecos-otro').value.trim()||'otro color';return r.value;};
   const cn=nm('color'),fn=nm('flecos');
-  $('pv-cap').textContent = cn&&fn ? `Mantón ${cn.toLowerCase()} con flecos ${fn==='Mismo tono que el mantón'?'del mismo tono':fn.toLowerCase()}${t?' · '+t.value.toLowerCase():''}`
+  $('pv-cap').textContent = cn&&fn ? `${prod} ${cn.toLowerCase()} con flecos ${fn==='Mismo tono'?'del mismo tono':fn.toLowerCase()}${t?' · '+t.value.toLowerCase():''}`
     : 'Elige los colores para ver la simulación';
 }
 document.querySelectorAll('#f input').forEach(i=>i.addEventListener('input',drawPreview));
 document.querySelectorAll('#f input').forEach(i=>i.addEventListener('change',drawPreview));
 drawPreview();
 
-function radio(n){const r=document.querySelector(`input[name=${n}]:checked`);return r?r.value:'';}
 function mark(id,bad){$(id).classList.toggle('invalid',bad);return bad;}
 
 $('f').addEventListener('submit',e=>{
   e.preventDefault();
+  const producto=radio('producto'), buf=producto==='Bufanda';
   const talla=radio('talla');
   const color=radio('color'), colorO=$('color-otro').value.trim();
   const fl=radio('flecos'), flO=$('flecos-otro').value.trim();
@@ -300,7 +332,8 @@ $('f').addEventListener('submit',e=>{
   const cpOk = pais==='España' ? /^\d{5}$/.test(cp) : cp.length>=3;
 
   const errs=[
-    mark('s-medidas', !talla),
+    mark('s-producto', !producto),
+    mark('s-medidas', !buf && !talla),
     mark('s-color', !color || (color==='Otro' && !colorO)),
     mark('s-flecos', !fl || (fl==='Otro' && !flO)),
     mark('s-cant', !(q>=1)),
@@ -311,10 +344,9 @@ $('f').addEventListener('submit',e=>{
   if(first){first.scrollIntoView({behavior:'smooth',block:'center'});return;}
 
   const txt=
-`Hola, quiero pedir presupuesto para un mantón:
+`Hola, quiero pedir presupuesto para ${buf?'una bufanda':'un mantón'}:
 
-- Tamaño: ${talla}${(TALLAS.find(x=>x[0]===talla)||[])[1]?' ('+TALLAS.find(x=>x[0]===talla)[1]+')':''}
-- Color principal: ${color==='Otro'?colorO:color}
+${buf?'':`- Tamaño: ${talla}${(TALLAS.find(x=>x[0]===talla)||[])[1]?' ('+TALLAS.find(x=>x[0]===talla)[1]+')':''}\n`}- Color principal: ${color==='Otro'?colorO:color}
 - Color de flecos: ${fl==='Otro'?flO:fl}
 - Cantidad: ${q}
 - Entrega: CP ${cp} (${pais})
